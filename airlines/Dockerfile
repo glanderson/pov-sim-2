@@ -10,6 +10,10 @@ COPY . .
 # Build the application
 RUN gradle clean bootJar
 
+# Download the OpenTelemetry Java agent (auto-instruments Spring Boot, no code changes)
+RUN curl -fsSL -o /opentelemetry-javaagent.jar \
+    https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.10.0/opentelemetry-javaagent.jar
+
 # Step 2: Use a lightweight JDK image for running the app
 FROM eclipse-temurin:17-jdk-alpine
 
@@ -19,8 +23,11 @@ WORKDIR /app
 # Copy the JAR file from the build stage
 COPY --from=build /app/build/libs/*.jar app.jar
 
+# Copy the OpenTelemetry Java agent
+COPY --from=build /opentelemetry-javaagent.jar opentelemetry-javaagent.jar
+
 # Expose the port the application runs on
 EXPOSE 8080
 
 # Set the command to run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT [["java", "-jar", "app.jar"]
