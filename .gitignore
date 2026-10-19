@@ -2,3 +2,6 @@ node_modules
 .env
 .gradle
 __pycache__
+airlines/build/*
+airlines/instrumentation
+airlines/bin
