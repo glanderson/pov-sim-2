@@ -1,3 +1,7 @@
 Flask==3.0.3
 flasgger==0.9.7.1
 Flask-Cors==5.0.0
+# for requirements.txt
+opentelemetry-distro==0.53b1
+opentelemetry-sdk==1.32.1
+opentelemetry-exporter-otlp==1.32.1

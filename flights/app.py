@@ -3,6 +3,25 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from utils import get_random_int
 
+import logging
+from uuid import uuid4
+from opentelemetry import trace
+from opentelemetry import metrics
+from random import randint
+
+# Acquire a tracer
+tracer = trace.get_tracer("flights.tracer")
+# Acquire a meter.
+meter = metrics.get_meter("flights.meter")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+flight_check_counter = meter.create_counter(
+    "flights.checks",
+    description="The number of calls to the /flights endpoint",
+)
+
 app = Flask(__name__)
 Swagger(app)
 CORS(app)
@@ -50,7 +69,17 @@ def get_flights(airline):
     if status_code:
       raise Exception(f"Encountered {status_code} error") # pylint: disable=broad-exception-raised
     random_int = get_random_int(100, 999)
-    return jsonify({airline: [random_int]}), 200
+    
+    with tracer.start_as_current_span("flights", kind=trace.SpanKind.SERVER) as flight_span:
+        # trace span
+        flight_span.set_attribute("airline", airline)
+        # metric
+        flight_check_counter.add(1, {"airline": 1})
+        # log
+        logmsg = "flights checked for airline: " + airline
+        logger.info(logmsg)
+        
+    return jsonify({airline: [random_int]}), 200     
 
 @app.route("/flight", methods=["POST"])
 def book_flight():
