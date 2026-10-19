@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 5001
 
 # Specify the command to run your Flask app
-CMD ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=5001"]
+CMD ["opentelemetry-instrument", "--logs_exporter", "otlp", "flask", "run", "--host=0.0.0.0", "--port=5001"]

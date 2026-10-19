@@ -11,6 +11,11 @@ services:
     ports:
       - "5001:5001"
     profiles: [backends]
+    environment:
+      - OTEL_SERVICE_NAME=flights_via_alloy
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
   frontend:
     build: 
       context: ./frontend
