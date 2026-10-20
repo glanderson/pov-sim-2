@@ -3,6 +3,9 @@ plugins {
 	id 'java'
 }
 
+def opentelemetryVersion = "1.48.0"
+def opentelemetryInstrumentationVersion = "2.13.3"
+
 apply plugin: 'io.spring.dependency-management'
 
 group = 'com.example'
@@ -22,6 +25,15 @@ dependencies {
 	// tag::tests[]
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
 	// end::tests[]
+
+	implementation platform("io.opentelemetry:opentelemetry-bom:${opentelemetryVersion}")
+	implementation platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${opentelemetryInstrumentationVersion}")
+	implementation "io.opentelemetry:opentelemetry-api",
+		"io.opentelemetry:opentelemetry-sdk",
+		"io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations"
+	implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.23.1'
+	implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.23.1'
+
 }
 
 test {
