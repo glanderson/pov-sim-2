@@ -29,5 +29,11 @@ COPY --from=build /opentelemetry-javaagent.jar opentelemetry-javaagent.jar
 # Expose the port the application runs on
 EXPOSE 8080
 
+# download the OTel JAR for java instrumentation
+ADD --chmod=644 https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
+
+# set up javaagent
+ENV JAVA_TOOL_OPTIONS=-javaagent:/app/opentelemetry-javaagent.jar
+
 # Set the command to run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
