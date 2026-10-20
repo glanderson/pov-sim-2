@@ -2,6 +2,9 @@
 {
 	"name": "gradle_jdk23",
 	"image": "gradle:jdk23",
+	"containerEnv": {
+		"JAVA_HOME": "/opt/java/openjdk"
+	},
 	"features": {
 		"ghcr.io/devcontainers/features/java:1": {
 			"version": "none",

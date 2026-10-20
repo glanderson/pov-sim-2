@@ -30,4 +30,4 @@ COPY --from=build /opentelemetry-javaagent.jar opentelemetry-javaagent.jar
 EXPOSE 8080
 
 # Set the command to run the application
-ENTRYPOINT [["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-javaagent:/app/opentelemetry-javaagent.jar", "-jar", "app.jar"]
