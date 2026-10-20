@@ -38,6 +38,7 @@ public class AirlinesController {
 		  .setUnit("1")
           .build();
 	private static final Logger logger = LogManager.getLogger(AirlinesController.class);
+
 	private static String[] airlines = { "AA", "DL", "UA" };
 
 	@Operation(summary = "Index", description = "No-op hello world")
@@ -60,8 +61,7 @@ public class AirlinesController {
 		if (raise) {
 			throw new RuntimeException("Exception raised");
 		}
-
-		// trace/span
+		// otel trace/span
 		Span span = Span.current();
 		span.setAttribute("testAttribute1", "test123");
 		span.setAttribute("testAttribute2", "test456");
