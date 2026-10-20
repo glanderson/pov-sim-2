@@ -9,6 +9,16 @@ from opentelemetry import trace
 from opentelemetry import metrics
 from random import randint
 
+import os
+import pyroscope
+
+pyroscope.configure(
+    application_name     = os.environ.get("PYROSCOPE_APPLICATION_NAME"),
+    server_address       = os.environ.get("PYROSCOPE_SERVER_ADDRESS"),
+    basic_auth_username  = os.environ.get("PYROSCOPE_BASIC_AUTH_USER"),
+    basic_auth_password  = os.environ.get("PYROSCOPE_BASIC_AUTH_PASSWORD"),
+)
+
 # Acquire a tracer
 tracer = trace.get_tracer("flights.tracer")
 # Acquire a meter.
