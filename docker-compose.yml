@@ -41,6 +41,8 @@ services:
     environment: 
       REACT_APP_AIRLINES_API_URL: ${REACT_APP_AIRLINES_API_URL}
       REACT_APP_FLIGHTS_API_URL: ${REACT_APP_FLIGHTS_API_URL}
+      REACT_APP_FARO_URL: ${REACT_APP_FARO_URL}
+      WDS_SOCKET_PORT: 443
   alloy:
     profiles: [backends]
     container_name: alloy
