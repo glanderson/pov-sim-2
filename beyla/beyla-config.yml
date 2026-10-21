@@ -1,0 +1,10 @@
+# Match on port AND executable. With pid: host, Docker's port proxy (dockerd)
+# also listens on the published ports, so port-only matching picks the wrong process.
+discovery:
+  instrument:
+    - name: airlines
+      open_ports: 8080
+      exe_path: "*java*"
+    - name: flights
+      open_ports: 5001
+      exe_path: "*python*"
