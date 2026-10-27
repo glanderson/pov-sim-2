@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airlines
+  labels:
+    app: airlines
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airlines
+  template:
+    metadata:
+      labels:
+        app: airlines
+    spec:
+      containers:
+        - name: airlines
+          image: airlines:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: airlines
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=pov-sim,deployment.environment=k8s,service.version=1.0.0
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://grafana-cloud-otel-receiver.test-pov.svc.cluster.local:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: PYROSCOPE_APPLICATION_NAME
+              value: airlines
+            - name: PYROSCOPE_SERVER_ADDRESS
+              valueFrom:
+                secretKeyRef: {name: pyroscope, key: PYROSCOPE_SERVER_ADDRESS}
+            - name: PYROSCOPE_BASIC_AUTH_USER
+              valueFrom:
+                secretKeyRef: {name: pyroscope, key: PYROSCOPE_BASIC_AUTH_USER}
+            - name: PYROSCOPE_BASIC_AUTH_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: pyroscope, key: PYROSCOPE_BASIC_AUTH_PASSWORD}
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5
+          resources:
+            requests: {cpu: 100m, memory: 384Mi}
+            limits: {memory: 768Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: airlines
+spec:
+  selector:
+    app: airlines
+  ports:
+    - port: 8080
+      targetPort: 8080
