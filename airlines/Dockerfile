@@ -20,7 +20,7 @@ RUN curl -fsSL -o /pyroscope.jar \
     https://github.com/grafana/pyroscope-java/releases/download/v2.9.2/pyroscope.jar
 
 # Step 2: Use a lightweight JDK image for running the app
-FROM eclipse-temurin:17-jdk-alpine
+FROM eclipse-temurin:17-jdk-jammy
 
 # Set the working directory for the runtime container
 WORKDIR /app
