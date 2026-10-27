@@ -8,7 +8,7 @@ services:
     environment:
       - OTEL_SERVICE_NAME=airlines
       - OTEL_RESOURCE_ATTRIBUTES=service.namespace=pov-sim,deployment.environment=dev,service.version=1.0.0
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://${OTLP_GATEWAY:-alloy}:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       - PYROSCOPE_APPLICATION_NAME=${PYROSCOPE_APPLICATION_NAME_FOR_AIRLINES}
       - PYROSCOPE_SERVER_ADDRESS=${PYROSCOPE_SERVER_ADDRESS}
@@ -24,7 +24,7 @@ services:
     environment:
       - OTEL_SERVICE_NAME=flights
       - OTEL_RESOURCE_ATTRIBUTES=service.namespace=pov-sim,deployment.environment=dev,service.version=1.0.0
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://${OTLP_GATEWAY:-alloy}:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       - OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
       - PYROSCOPE_APPLICATION_NAME=${PYROSCOPE_APPLICATION_NAME_FOR_FLIGHTS}
@@ -46,7 +46,7 @@ services:
       REACT_APP_FARO_URL: ${REACT_APP_FARO_URL}
       WDS_SOCKET_PORT: 443
   alloy:
-    profiles: [backends]
+    profiles: [alloy]
     container_name: alloy
     image: grafana/alloy:v1.21.2
     ports:
@@ -67,3 +67,16 @@ services:
       "--stability.level=public-preview",
       "/etc/alloy/config.alloy",
     ]
+  otelcol:
+    profiles: [otelcol]
+    container_name: otelcol
+    image: otel/opentelemetry-collector-contrib:0.164.0
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      - CLOUD_OTLP_ENDPOINT=${CLOUD_OTLP_ENDPOINT}
+      - CLOUD_OTLP_USERNAME=${CLOUD_OTLP_USERNAME}
+      - CLOUD_OTLP_PASSWORD=${CLOUD_OTLP_PASSWORD}
+    volumes:
+      - ./otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro

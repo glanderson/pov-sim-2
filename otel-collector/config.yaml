@@ -1,0 +1,42 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  resourcedetection:
+    detectors: [env, system]
+    system:
+      hostname_sources: [os]
+  batch: {}
+
+extensions:
+  basicauth/grafana_cloud:
+    client_auth:
+      username: ${env:CLOUD_OTLP_USERNAME}
+      password: ${env:CLOUD_OTLP_PASSWORD}
+
+exporters:
+  otlphttp/grafana_cloud:
+    endpoint: ${env:CLOUD_OTLP_ENDPOINT}
+    auth:
+      authenticator: basicauth/grafana_cloud
+
+service:
+  extensions: [basicauth/grafana_cloud]
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [resourcedetection, batch]
+      exporters: [otlphttp/grafana_cloud]
+    logs:
+      receivers: [otlp]
+      processors: [resourcedetection, batch]
+      exporters: [otlphttp/grafana_cloud]
+    traces:
+      receivers: [otlp]
+      processors: [resourcedetection, batch]
+      exporters: [otlphttp/grafana_cloud]

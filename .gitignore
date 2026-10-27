@@ -5,3 +5,6 @@ __pycache__
 airlines/build/*
 airlines/instrumentation
 airlines/bin
+# local secrets
+*.secret.yaml
+helm-charts/*-values.local.yaml
