@@ -41,7 +41,17 @@ k8s-secret:
 		--from-literal=PYROSCOPE_BASIC_AUTH_PASSWORD="$$PYROSCOPE_BASIC_AUTH_PASSWORD" \
 		--dry-run=client -o yaml | kubectl apply -f -
 
-k8s-apps: k8s-build k8s-secret
+# Collector config + OTLP creds for the in-cluster OTel Collector (creds sourced from .env, never written to a file)
+k8s-collector-config:
+	kubectl create configmap otel-collector-config --from-file=config.yaml=otel-collector/config.k8s.yaml \
+		--dry-run=client -o yaml | kubectl apply -f -
+	set -a && . ./.env && set +a && kubectl create secret generic otlp-credentials \
+		--from-literal=CLOUD_OTLP_ENDPOINT="$$CLOUD_OTLP_ENDPOINT" \
+		--from-literal=CLOUD_OTLP_USERNAME="$$CLOUD_OTLP_USERNAME" \
+		--from-literal=CLOUD_OTLP_PASSWORD="$$CLOUD_OTLP_PASSWORD" \
+		--dry-run=client -o yaml | kubectl apply -f -
+
+k8s-apps: k8s-build k8s-secret k8s-collector-config
 	kubectl apply -f k8s/
 
 k8s-apps-down:
@@ -53,4 +63,4 @@ k8s-down:
 	-helm uninstall sample-chart
 	minikube stop
 
-.PHONY: up down backends backends-alloy backends-otelcol ui k8s-up k8s-down k8s-build k8s-secret k8s-apps k8s-apps-down
+.PHONY: up down backends backends-alloy backends-otelcol ui k8s-up k8s-down k8s-build k8s-secret k8s-apps k8s-apps-down k8s-collector-config

@@ -1,0 +1,86 @@
+# Config comes from the otel-collector-config ConfigMap and creds from the otlp-credentials Secret;
+# both are created by `make k8s-collector-config` so nothing sensitive lives in this file.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-collector
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: otel-collector-k8sattributes
+rules:
+  - apiGroups: [""]
+    resources: [pods, namespaces, nodes]
+    verbs: [get, watch, list]
+  - apiGroups: [apps]
+    resources: [replicasets, deployments]
+    verbs: [get, watch, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-collector-k8sattributes
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: otel-collector-k8sattributes
+subjects:
+  - kind: ServiceAccount
+    name: otel-collector
+    namespace: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  labels:
+    app: otel-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      serviceAccountName: otel-collector
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:0.164.0
+          args: ["--config=/etc/otelcol-contrib/config.yaml"]
+          ports:
+            - containerPort: 4317
+            - containerPort: 4318
+          envFrom:
+            - secretRef:
+                name: otlp-credentials
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otelcol-contrib/config.yaml
+              subPath: config.yaml
+              readOnly: true
+          resources:
+            requests: {cpu: 50m, memory: 128Mi}
+            limits: {memory: 384Mi}
+      volumes:
+        - name: config
+          configMap:
+            name: otel-collector-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318

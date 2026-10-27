@@ -26,7 +26,7 @@ spec:
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.namespace=pov-sim,deployment.environment=k8s,service.version=1.0.0
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: http://grafana-cloud-otel-receiver.test-pov.svc.cluster.local:4317
+              value: http://otel-collector:4317
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: grpc
             - name: PYROSCOPE_APPLICATION_NAME
