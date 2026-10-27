@@ -8,6 +8,16 @@ import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 import { ReplayInstrumentation } from '@grafana/faro-instrumentation-replay';
 
+// Backend origins that should receive the W3C traceparent header, so browser spans
+// link to the Flights/Airlines traces.
+const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const backendOrigins = [
+  process.env.REACT_APP_AIRLINES_API_URL,
+  process.env.REACT_APP_FLIGHTS_API_URL,
+]
+  .filter(Boolean)
+  .map((url) => new RegExp('^' + escapeRegExp(new URL(url).origin)));
+
 initializeFaro({
   url: process.env.REACT_APP_FARO_URL,
   app: {
@@ -19,7 +29,11 @@ initializeFaro({
     // Mandatory, omits default instrumentation otherwise.
     ...getWebInstrumentations(),
     // Tracing package to get end-to-end visibility for HTTP requests.
-    new TracingInstrumentation(),
+    new TracingInstrumentation({
+      instrumentationOptions: {
+        propagateTraceHeaderCorsUrls: backendOrigins,
+      },
+    }),
     // Session replay package to record user interactions
     new ReplayInstrumentation({
       maskTextSelector: '.grafana-mask, [contenteditable]',

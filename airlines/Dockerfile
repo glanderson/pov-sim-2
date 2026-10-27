@@ -10,9 +10,14 @@ COPY . .
 # Build the application
 RUN gradle clean bootJar
 
-# Download the OpenTelemetry Java agent (auto-instruments Spring Boot, no code changes)
+# Download the OpenTelemetry Java agent (auto-instruments Spring Boot, no code changes).
+# Version matches opentelemetryInstrumentationVersion in build.gradle.
 RUN curl -fsSL -o /opentelemetry-javaagent.jar \
-    https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.10.0/opentelemetry-javaagent.jar
+    https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.13.3/opentelemetry-javaagent.jar
+
+# Download the Pyroscope Java agent (previously a manual, gitignored airlines/instrumentation/pyroscope.jar)
+RUN curl -fsSL -o /pyroscope.jar \
+    https://github.com/grafana/pyroscope-java/releases/download/v2.9.2/pyroscope.jar
 
 # Step 2: Use a lightweight JDK image for running the app
 FROM eclipse-temurin:17-jdk-alpine
@@ -29,13 +34,8 @@ COPY --from=build /opentelemetry-javaagent.jar opentelemetry-javaagent.jar
 # Expose the port the application runs on
 EXPOSE 8080
 
-# download the OTel JAR for java instrumentation
-ADD --chmod=644 https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
-
-# pyroscope changes
-
-# Copy the pyroscope JAR file
-COPY --from=build /app/instrumentation/pyroscope.jar pyroscope.jar
+# Copy the Pyroscope JAR file
+COPY --from=build /pyroscope.jar pyroscope.jar
 
 # set up javaagent
 ENV JAVA_TOOL_OPTIONS='-javaagent:/app/opentelemetry-javaagent.jar -javaagent:/app/pyroscope.jar'

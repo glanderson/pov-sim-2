@@ -6,7 +6,8 @@ services:
       - "8080:8080"
     profiles: [backends]
     environment:
-      - OTEL_SERVICE_NAME=airlines_via_alloy
+      - OTEL_SERVICE_NAME=airlines
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=pov-sim,deployment.environment=dev,service.version=1.0.0
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       - PYROSCOPE_APPLICATION_NAME=${PYROSCOPE_APPLICATION_NAME_FOR_AIRLINES}
@@ -21,7 +22,8 @@ services:
       - "5001:5001"
     profiles: [backends]
     environment:
-      - OTEL_SERVICE_NAME=flights_via_alloy
+      - OTEL_SERVICE_NAME=flights
+      - OTEL_RESOURCE_ATTRIBUTES=service.namespace=pov-sim,deployment.environment=dev,service.version=1.0.0
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://alloy:4317
       - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
       - OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
@@ -46,7 +48,7 @@ services:
   alloy:
     profiles: [backends]
     container_name: alloy
-    image: grafana/alloy:latest
+    image: grafana/alloy:v1.21.2
     ports:
       - "12345:12345"
       - "4317:4317"

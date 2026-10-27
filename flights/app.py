@@ -84,7 +84,7 @@ def get_flights(airline):
         # trace span
         flight_span.set_attribute("airline", airline)
         # metric
-        flight_check_counter.add(1, {"airline": 1})
+        flight_check_counter.add(1, {"airline": airline})
         # log
         logmsg = "flights checked for airline: " + airline
         logger.info(logmsg)
@@ -124,4 +124,4 @@ def book_flight():
     return jsonify({"passenger_name": passenger_name, "flight_num": flight_num, "booking_id": booking_id}), 200
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=False, port=5001)
