@@ -1,0 +1,66 @@
+apiVersion: rules.alerting.grafana.app/v0alpha1
+kind: AlertRule
+metadata:
+  annotations:
+    grafana.app/folder: pov-sim-alerts
+  labels:
+    grafana.app/folder: pov-sim-alerts
+  name: pov-sim-service-error-rate
+spec:
+  title: PoV Sim service error rate high
+  annotations:
+    summary: "{{ $labels.service }} error rate is above 5% (currently {{ humanizePercentage $values.query.Value }})"
+    description: Span error ratio for {{ $labels.service }} in deployment.environment=k8s has been above 5% for 2 minutes. Open Application Observability, then the service, to see the failing operations and traces.
+  expressions:
+    query:
+      datasourceUID: grafanacloud-prom
+      model:
+        datasource:
+          type: prometheus
+          uid: grafanacloud-prom
+        expr: |
+          sum by (service) (rate(traces_spanmetrics_calls_total{service=~"airlines|flights", deployment_environment="k8s", status_code="STATUS_CODE_ERROR"}[5m]))
+            /
+          sum by (service) (rate(traces_spanmetrics_calls_total{service=~"airlines|flights", deployment_environment="k8s"}[5m]))
+        instant: true
+        intervalMs: 1000
+        maxDataPoints: 43200
+        range: false
+        refId: query
+      queryType: prometheus
+      relativeTimeRange:
+        from: 10m0s
+        to: 0s
+    threshold:
+      model:
+        conditions:
+          - evaluator:
+              params:
+                - 0.05
+              type: gt
+        datasource:
+          type: __expr__
+          uid: __expr__
+        expression: query
+        refId: threshold
+        type: threshold
+      queryType: threshold
+      source: true
+  for: 2m
+  labels:
+    severity: warning
+    team: pov-sim
+  execErrState: Error
+  noDataState: Ok
+  missingSeriesEvalsToResolve: 2
+  notificationSettings:
+    receiver: Glenn Anderson
+    groupBy:
+      - alertname
+      - service
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 4h
+    type: SimplifiedRouting
+  trigger:
+    interval: 1m
