@@ -8,3 +8,6 @@ airlines/bin
 # local secrets
 *.secret.yaml
 helm-charts/*-values.local.yaml
+
+# local k8s helper state
+.k8s-forward.pids
