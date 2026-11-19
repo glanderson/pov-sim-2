@@ -1,0 +1,17 @@
+apiVersion: servicemodel.ext.grafana.com/v1alpha1
+kind: Component
+metadata:
+  name: pov-sim-frontend
+spec:
+  title: PoV Sim Frontend
+  description: React web app (Grafana Faro) that calls the airlines and flights services from the browser.
+  type: website
+  lifecycle: experimental
+  # Faro emits service_name=pov-sim-frontend_hardened. An identifier can't contain an underscore,
+  # so the Service Center identifier is pov-sim-frontend and the real label is matched here.
+  identifiers:
+    - key: service_name
+      value: pov-sim-frontend_hardened
+  dependsOn:
+    - airlines
+    - flights

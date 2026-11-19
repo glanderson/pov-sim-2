@@ -1,0 +1,10 @@
+apiVersion: servicemodel.ext.grafana.com/v1alpha1
+kind: Component
+metadata:
+  name: flights
+spec:
+  title: Flights
+  description: Python (Flask) service that returns and books flights. Instrumented with opentelemetry-instrument; runs in the pov-sim minikube cluster.
+  type: service
+  lifecycle: experimental
+  # Telemetry from this app carries service_name=flights, which already matches the identifier (metadata.name).

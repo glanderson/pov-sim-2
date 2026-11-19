@@ -1,0 +1,10 @@
+apiVersion: servicemodel.ext.grafana.com/v1alpha1
+kind: Component
+metadata:
+  name: airlines
+spec:
+  title: Airlines
+  description: Java (Spring Boot) service that returns airline data. Instrumented with the OpenTelemetry Java agent; runs in the pov-sim minikube cluster.
+  type: service
+  lifecycle: experimental
+  # Telemetry from this app carries service_name=airlines, which already matches the identifier (metadata.name).
