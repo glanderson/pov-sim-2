@@ -5,12 +5,12 @@ metadata:
     grafana.app/folder: pov-sim-alerts
   labels:
     grafana.app/folder: pov-sim-alerts
-  name: pov-sim-service-error-rate
+  name: pov-sim-flights-error-rate
 spec:
-  title: PoV Sim service error rate high
+  title: PoV Sim flights error rate high
   annotations:
-    summary: "{{ $labels.service }} error rate is above 5% (currently {{ humanizePercentage $values.query.Value }})"
-    description: Span error ratio for {{ $labels.service }} in deployment.environment=k8s has been above 5% for 2 minutes. Open Application Observability, then the service, to see the failing operations and traces.
+    summary: "flights error rate is above 5% (currently {{ humanizePercentage $values.query.Value }})"
+    description: Span error ratio for flights in deployment.environment=k8s has been above 5% for 2 minutes. Open Application Observability, then the service, to see the failing operations and traces.
   expressions:
     query:
       datasourceUID: grafanacloud-prom
@@ -19,9 +19,9 @@ spec:
           type: prometheus
           uid: grafanacloud-prom
         expr: |
-          sum by (service) (rate(traces_spanmetrics_calls_total{service=~"airlines|flights", deployment_environment="k8s", status_code="STATUS_CODE_ERROR"}[5m]))
+          sum(rate(traces_spanmetrics_calls_total{service="flights", deployment_environment="k8s", status_code="STATUS_CODE_ERROR"}[5m]))
             /
-          sum by (service) (rate(traces_spanmetrics_calls_total{service=~"airlines|flights", deployment_environment="k8s"}[5m]))
+          sum(rate(traces_spanmetrics_calls_total{service="flights", deployment_environment="k8s"}[5m]))
         instant: true
         intervalMs: 1000
         maxDataPoints: 43200
@@ -47,7 +47,10 @@ spec:
       queryType: threshold
       source: true
   for: 2m
+  paused: true
   labels:
+    # service_name is what Service Center matches on to attach this alert to the flights service
+    service_name: flights
     severity: warning
     team: pov-sim
   execErrState: Error
@@ -57,7 +60,7 @@ spec:
     receiver: Glenn Anderson
     groupBy:
       - alertname
-      - service
+      - service_name
     groupWait: 30s
     groupInterval: 5m
     repeatInterval: 4h
