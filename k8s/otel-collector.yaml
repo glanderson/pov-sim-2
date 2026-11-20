@@ -54,6 +54,10 @@ spec:
           ports:
             - containerPort: 4317
             - containerPort: 4318
+          env:
+            # Used by the resource/cluster processor to set k8s.cluster.name; change for a non-minikube cluster.
+            - name: K8S_CLUSTER_NAME
+              value: minikube
           envFrom:
             - secretRef:
                 name: otlp-credentials

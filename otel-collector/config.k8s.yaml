@@ -28,6 +28,23 @@ processors:
     detectors: [env, system]
     system:
       hostname_sources: [os]
+  # Cluster identity: Kubernetes Monitoring expects cluster/namespace/pod on pod logs.
+  # K8S_CLUSTER_NAME is set on the collector Deployment (k8s/otel-collector.yaml).
+  resource/cluster:
+    attributes:
+      - key: k8s.cluster.name
+        value: ${env:K8S_CLUSTER_NAME}
+        action: insert
+  # Guarantee service.instance.id on every service (Python/flights does not set it).
+  # Follows the OTel convention <namespace>.<pod>.<container>; only fills it when missing.
+  transform/instance_id:
+    error_mode: ignore
+    trace_statements: &instance_id
+      - context: resource
+        statements:
+          - set(attributes["service.instance.id"], Concat([attributes["k8s.namespace.name"], attributes["k8s.pod.name"]], ".")) where attributes["service.instance.id"] == nil and attributes["k8s.pod.name"] != nil
+    metric_statements: *instance_id
+    log_statements: *instance_id
   batch: {}
 
 extensions:
@@ -47,13 +64,13 @@ service:
   pipelines:
     metrics:
       receivers: [otlp]
-      processors: [k8sattributes, resourcedetection, batch]
+      processors: [k8sattributes, resourcedetection, resource/cluster, transform/instance_id, batch]
       exporters: [otlphttp/grafana_cloud]
     logs:
       receivers: [otlp]
-      processors: [k8sattributes, resourcedetection, batch]
+      processors: [k8sattributes, resourcedetection, resource/cluster, transform/instance_id, batch]
       exporters: [otlphttp/grafana_cloud]
     traces:
       receivers: [otlp]
-      processors: [k8sattributes, resourcedetection, batch]
+      processors: [k8sattributes, resourcedetection, resource/cluster, transform/instance_id, batch]
       exporters: [otlphttp/grafana_cloud]
